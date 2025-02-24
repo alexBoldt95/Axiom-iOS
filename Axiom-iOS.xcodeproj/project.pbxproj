@@ -27,11 +27,27 @@
 		9AB076F02D57DF2B005263FA /* Axiom-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Axiom-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AB077002D57DF2C005263FA /* Axiom-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Axiom-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AB0770A2D57DF2C005263FA /* Axiom-iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Axiom-iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9AD63F612D63CA3600A82DE6 /* Axiom-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Axiom-iOS.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9AACA9CC2D62EEE500868CF8 /* Exceptions for "Axiom-iOS" folder in "Axiom-iOSTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Logic/Errors.swift,
+				Logic/Guesser.swift,
+				Logic/LetterRowState.swift,
+			);
+			target = 9AB076FF2D57DF2C005263FA /* Axiom-iOSTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9AB076F22D57DF2B005263FA /* Axiom-iOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9AACA9CC2D62EEE500868CF8 /* Exceptions for "Axiom-iOS" folder in "Axiom-iOSTests" target */,
+			);
 			path = "Axiom-iOS";
 			sourceTree = "<group>";
 		};
@@ -75,6 +91,7 @@
 		9AB076E72D57DF2B005263FA = {
 			isa = PBXGroup;
 			children = (
+				9AD63F612D63CA3600A82DE6 /* Axiom-iOS.xctestplan */,
 				9AB076F22D57DF2B005263FA /* Axiom-iOS */,
 				9AB077032D57DF2C005263FA /* Axiom-iOSTests */,
 				9AB0770D2D57DF2C005263FA /* Axiom-iOSUITests */,

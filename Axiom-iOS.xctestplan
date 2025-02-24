@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "549BA70D-50FD-437B-AF90-918B50FC2A30",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Axiom-iOS.xcodeproj",
+      "identifier" : "9AB076EF2D57DF2B005263FA",
+      "name" : "Axiom-iOS"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:Axiom-iOS.xcodeproj",
+        "identifier" : "9AB076FF2D57DF2C005263FA",
+        "name" : "Axiom-iOSTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Axiom-iOS.xcodeproj",
+        "identifier" : "9AB077092D57DF2C005263FA",
+        "name" : "Axiom-iOSUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
