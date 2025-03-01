@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct LetterGrid: View {
-    private let numRows: Int = 6
-    private let numCols: Int = 5
-    let secretWord: String
+    private let numRows: Int
+    let secretWordList: [String]
     var guessList: [String]
     private var guessStates: [LetterRowState]
     
-    init(secretWord: String = "axiom", guessList: [String] = []) {
-        self.secretWord = secretWord
+    init(secretWordList: [String], guessList: [String]) {
+        self.secretWordList = secretWordList
+        self.numRows = secretWordList.count
         
         var myGuessList = guessList
         // fill out rest with empties
@@ -27,12 +27,13 @@ struct LetterGrid: View {
         let guesser = Guesser()
         var myRowStates: [LetterRowState] = []
         // MUST INITIALIZE ALL PROPERTIES WITHIN INIT(), CANNOT FIND A WAY TO USE A HELPER FUNC...
+        // TODO pull this logic up to caller and pass the RowStates into this view
         for i in 0..<numRows {
             do {
-                let result = try guesser.GetLetterStates(secretWord, myGuessList[i])
+                let result = try guesser.GetLetterStates(secretWordList[i], myGuessList[i])
                 myRowStates.append(result)
             } catch {
-                myRowStates.append(LetterRowState.allError(numCols))
+                myRowStates.append(LetterRowState.allError(myGuessList[i].count))
             }
         }
         self.guessStates = myRowStates
@@ -42,12 +43,12 @@ struct LetterGrid: View {
     var body: some View {
         VStack {
             ForEach(0..<numRows, id: \.description) { guessIndex in
-                LetterRow(theWord: guessList[guessIndex], letterStates: guessStates[guessIndex])
+                LetterRow(theWord: guessList[guessIndex], length: secretWordList[guessIndex].count, letterStates: guessStates[guessIndex])
             }
         }
     }
 }
 
 #Preview {
-    LetterGrid(secretWord:"axiom", guessList: ["testa", "xioma", "fairy"])
+    LetterGrid(secretWordList:["testa", "testb", "testc", "abcde"], guessList: ["testa", "testa", "btest"])
 }

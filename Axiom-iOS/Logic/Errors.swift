@@ -9,4 +9,5 @@ import Foundation
 
 enum GuesserError: Error, Equatable {
     case WordsDifferentLengths(targetLength: Int, guessLength: Int)
+    case GuessLengthNotMatchExpected(targetLength: Int, guessLength: Int)
 }

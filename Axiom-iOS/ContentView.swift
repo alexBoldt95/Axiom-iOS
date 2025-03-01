@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        GameView(secretWord: "AXIOM")
+        GameView(secretWordList: Array(repeating: "AXIOM", count: 6))
     }
 }
 

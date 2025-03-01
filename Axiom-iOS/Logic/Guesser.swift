@@ -80,6 +80,15 @@ class Guesser {
         
         return LetterRowState(ret)
     }
+    
+    func AllCorrect(_ rowState: LetterRowState) -> Bool {
+        for letterState in rowState.states {
+            if letterState != .Correct {
+                return false
+            }
+        }
+        return true
+    }
 
     func trimAndNormalize(_ input: String) -> String {
         return input.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
@@ -96,5 +105,14 @@ class Guesser {
     func getCharArray(_ input: String) -> [Character] {
         return Array(input)
     }
-
+    
+    func ValidateGuess(_ rawTarget: String, _ rawGuess: String) throws {
+        let target = trimAndNormalize(rawTarget)
+        let guess = trimAndNormalize(rawGuess)
+        
+        if target.count != guess.count {
+            throw GuesserError.GuessLengthNotMatchExpected(targetLength: target.count, guessLength: guess.count)
+        }
+    }
+    
 }

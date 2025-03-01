@@ -10,11 +10,12 @@ import SwiftUI
 struct LetterRow: View {
     var theWord: String
     var letterStates: LetterRowState
-    private let rowLength: Int = 5
+    private let length: Int
     
-    init(theWord: String, letterStates: LetterRowState) {
+    init(theWord: String, length: Int, letterStates: LetterRowState) {
         self.theWord = theWord
-        self.letterStates = LetterRowState(letterStates, rowLength)
+        self.length = length
+        self.letterStates = LetterRowState(letterStates, length)
     }
     var body: some View {
         HStack {
@@ -24,7 +25,7 @@ struct LetterRow: View {
                 LetterBox(theLetter: thisLetter, theState: letterStates.stateAtIndex(index))
             }
             // TODO fill empties from the word directly...
-            ForEach(theWord.count..<rowLength, id: \.description) { _ in
+            ForEach(theWord.count..<length, id: \.description) { _ in
                 LetterBox(theLetter: "", theState: LetterBoxState.Empty)
             }
         }
@@ -33,6 +34,6 @@ struct LetterRow: View {
 }
 
 #Preview {
-    let guessWord = "AXIOm"
-    LetterRow(theWord: guessWord, letterStates: LetterRowState([.Correct, .Incorrect, .Position, .Incorrect]))
+    let guessWord = "AXIO"
+    LetterRow(theWord: guessWord, length: 5, letterStates: LetterRowState([.Correct, .Incorrect, .Position, .Incorrect]))
 }
