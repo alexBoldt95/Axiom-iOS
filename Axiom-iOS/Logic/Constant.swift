@@ -7,3 +7,10 @@
 
 import Foundation
 
+enum LetterBoxState: Equatable {
+    case Empty
+    case Incorrect
+    case Position
+    case Correct
+    case Error
+}

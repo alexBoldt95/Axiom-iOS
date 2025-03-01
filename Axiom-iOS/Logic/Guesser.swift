@@ -7,16 +7,6 @@
 
 import Foundation
 
-enum LetterBoxState: Equatable {
-    case Empty
-    case Incorrect
-    case Position
-    case Correct
-    case Error
-}
-
-
-
 class Guesser {
     func GetLetterStates(_ rawTarget: String, _ rawGuess: String) throws -> LetterRowState {
         
@@ -116,3 +106,4 @@ class Guesser {
     }
     
 }
+
