@@ -74,6 +74,9 @@ struct GameView: View {
         self.guesses.removeAll()
         self.turn = 1
         clearMessage()
+        
+        let secretWord = GuesserLogic.GetRandomSecretWord()
+        secretWordList = Array(repeating: secretWord, count: turnLimit)
     }
     
     func handleTurn(_ guessWord: String, _ turnIndex: Int) {
@@ -82,6 +85,9 @@ struct GameView: View {
             try GuesserLogic.ValidateGuess(secretWordList[turnIndex], guessWord)
         } catch GuesserError.GuessLengthNotMatchExpected(let expectedLength, let guessLength) {
             setAndShowMessage("Your guess (\(guessLength)) must be \(expectedLength) characters long.")
+            return
+        } catch GuesserError.GuessNotInWordList(_) {
+            setAndShowMessage("Not in word list")
             return
         } catch {
             setAndShowMessage(String(describing: error))
@@ -104,7 +110,7 @@ struct GameView: View {
         // loss
         if turn > turnLimit {
             gameFinished = true
-            setAndShowMessage("🤣")
+            setAndShowMessage("🤣 the word was '\(secretWordList[0])'")
             newGameButtonText = "Try Again?"
             return
         }
@@ -113,10 +119,6 @@ struct GameView: View {
     func clearMessage() {
         self.showMessage = false
         self.message = ""
-        // what's this?
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-        //            self.showMessage = false
-        //        }
     }
     
     func setAndShowMessage(_ message: String) {
@@ -139,10 +141,15 @@ struct GameView: View {
 
 struct GameView_Preview: View {
     var body: some View {
-        GameView(started: true, secretWordList: Array(repeating: "AXIOM", count: 6))
+        let GuesserLogic: Guesser = Guesser()
+        let secretWord = GuesserLogic.GetRandomSecretWord()
+        GameView(started: true, secretWordList: Array(repeating: secretWord, count: 6))
     }
 }
 
 #Preview {
     GameView_Preview()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.appBackground)
+        .tint(.white)
 }

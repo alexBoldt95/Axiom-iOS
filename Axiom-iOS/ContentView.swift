@@ -28,7 +28,9 @@ struct ContentView: View {
             }
             
             if showGame {
-                GameView(started: true, secretWordList: Array(repeating: "AXIOM", count: 6))
+                let GuesserLogic: Guesser = Guesser()
+                let secretWord = GuesserLogic.GetRandomSecretWord()
+                GameView(started: true, secretWordList: Array(repeating: secretWord, count: 6))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

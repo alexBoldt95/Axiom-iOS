@@ -37,6 +37,7 @@
 				Logic/Errors.swift,
 				Logic/Guesser.swift,
 				Logic/LetterRowState.swift,
+				Logic/SecretWords.swift,
 			);
 			target = 9AB076FF2D57DF2C005263FA /* Axiom-iOSTests */;
 		};

@@ -8,6 +8,11 @@
 import Foundation
 
 class Guesser {
+    private var SecretWordSet: Set<String> = []
+    init() {
+        self.SecretWordSet = Set(SecretWords)
+    }
+    
     func GetLetterStates(_ rawTarget: String, _ rawGuess: String) throws -> LetterRowState {
         
         let target = trimAndNormalize(rawTarget)
@@ -71,6 +76,11 @@ class Guesser {
         return LetterRowState(ret)
     }
     
+    func GetRandomSecretWord() -> String {
+        let randomIndex = Int.random(in: 0..<SecretWords.count)
+        return SecretWords[randomIndex].uppercased()
+    }
+    
     func AllCorrect(_ rowState: LetterRowState) -> Bool {
         for letterState in rowState.states {
             if letterState != .Correct {
@@ -102,6 +112,11 @@ class Guesser {
         
         if target.count != guess.count {
             throw GuesserError.GuessLengthNotMatchExpected(targetLength: target.count, guessLength: guess.count)
+        }
+        
+        // set is in lowercase
+        if !self.SecretWordSet.contains(guess.lowercased()) {
+            throw GuesserError.GuessNotInWordList(guess: guess)
         }
     }
     
