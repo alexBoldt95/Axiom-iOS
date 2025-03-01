@@ -12,47 +12,68 @@ struct GameView: View {
     @State private var currentGuess = ""
     @State private var guesses: [String] = []
     @State var gameFinished: Bool = false
-    @State var message: String = "placeholder message"
+    @State var message: String = "debug message"
     @State var turn: Int = 1
     @State var showMessage: Bool = false
-
+    @State var showGrid: Bool
+    @State var newGameButtonText: String = "New Game"
+    @FocusState var guessFieldIsFocused: Bool
+    
     var GuesserLogic: Guesser = Guesser()
     var turnLimit: Int
     
-    init(secretWordList: [String]) {
+    init(started: Bool, secretWordList: [String]) {
         self.secretWordList = secretWordList
         self.turnLimit = secretWordList.count
+        self.showGrid = started
     }
     
     var body: some View {
         VStack {
-            LetterGrid(secretWordList: secretWordList, guessList: guesses)
-            HStack{
-                TextField("GUESS", text: $currentGuess, prompt: Text("GUESS"))
-                    .onSubmit {
-                        handleTurn(currentGuess, turn - 1)
-                        currentGuess = ""
+            if showGrid {
+                VStack {
+                    LetterGrid(secretWordList: secretWordList, guessList: guesses)
+                    HStack{
+                        TextField("GUESS", text: $currentGuess, prompt: Text("GUESS"))
+                            .focused($guessFieldIsFocused) // Bind focus state
+                            .onSubmit {
+                                handleTurn(currentGuess, turn - 1)
+                                currentGuess = ""
+                                guessFieldIsFocused = true
+                            }
+                            .disabled(gameFinished)
+                            .disableAutocorrection(true)
+                            .autocapitalization(.allCharacters)
+                            .foregroundColor(.black)
+                            .fontDesign(.monospaced)
+                            .fontDesign(.rounded)
+                            .font(.largeTitle)
+                            .multilineTextAlignment(.center)
+                            .padding()
                     }
-                    .disabled(gameFinished)
-                    .disableAutocorrection(true)
-                    .autocapitalization(.allCharacters)
-                    .foregroundColor(.black)
-                    .fontDesign(.monospaced)
-                    .fontDesign(.rounded)
-                    .font(.largeTitle)
-                    .multilineTextAlignment(.center)
-                    .padding()
+                    
+                    Text("\(message)")
+                        .opacity(showMessage ? 1 : 0)
+                        .font(.largeTitle)
+                }
             }
-            
-            Text("\(message)")
-                .opacity(showMessage ? 1 : 0)
-                .font(.largeTitle)
-            
-            
+            if !showGrid || gameFinished {
+                Button("\(newGameButtonText)"){
+                    newGame()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .padding(.top)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.appBackground)
-        .tint(.white)
+    }
+    
+    func newGame() {
+        self.showGrid = true
+        self.gameFinished = false
+        self.guesses.removeAll()
+        self.turn = 1
+        clearMessage()
     }
     
     func handleTurn(_ guessWord: String, _ turnIndex: Int) {
@@ -70,16 +91,22 @@ struct GameView: View {
         guesses.append(guessWord)
         let rowStateForCurrentGuess = getRowState(secretWord: secretWordList[turnIndex], guessWord: guessWord)
         
+        // win
         let win = GuesserLogic.AllCorrect(rowStateForCurrentGuess)
         if win {
             gameFinished = true
-            setAndShowMessage("😎")
+            setAndShowMessage("🔥🔥🔥")
+            newGameButtonText = "Play Again?"
+            return
         }
         
         turn+=1
+        // loss
         if turn > turnLimit {
             gameFinished = true
             setAndShowMessage("🤣")
+            newGameButtonText = "Try Again?"
+            return
         }
     }
     
@@ -110,6 +137,12 @@ struct GameView: View {
     }
 }
 
+struct GameView_Preview: View {
+    var body: some View {
+        GameView(started: true, secretWordList: Array(repeating: "AXIOM", count: 6))
+    }
+}
+
 #Preview {
-    GameView(secretWordList: Array(repeating: "AXIOM", count: 6))
+    GameView_Preview()
 }
