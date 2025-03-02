@@ -45,7 +45,7 @@ struct GameView: View {
                             .disabled(gameFinished)
                             .disableAutocorrection(true)
                             .autocapitalization(.allCharacters)
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .fontDesign(.monospaced)
                             .fontDesign(.rounded)
                             .font(.largeTitle)
@@ -91,7 +91,7 @@ struct GameView: View {
         } catch GuesserError.GuessNotInWordList(_) {
             setAndShowMessage("Not in word list")
             return
-        } catch GuesserError.GuessHasInvalidChars(guess: _, let invalidString) {
+        } catch GuesserError.GuessHasInvalidChars(guess: _, invalidCharString: _) {
             // not a feature in the inspired game
             //                    setAndShowMessage("Cannot use characters that are missing: \"\(invalidString)\"")
             //                    return
