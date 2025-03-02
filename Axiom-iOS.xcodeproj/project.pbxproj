@@ -35,6 +35,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Logic/Errors.swift,
+				Logic/GlobalWords.swift,
 				Logic/Guesser.swift,
 				Logic/LetterRowState.swift,
 				Logic/SecretWords.swift,

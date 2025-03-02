@@ -10,7 +10,7 @@ import Foundation
 class Guesser {
     private var SecretWordSet: Set<String> = []
     init() {
-        self.SecretWordSet = Set(SecretWords)
+        self.SecretWordSet = Set(EnglishSecretWords)
     }
     
     func GetLetterStates(_ rawTarget: String, _ rawGuess: String) throws -> LetterRowState {
@@ -77,8 +77,9 @@ class Guesser {
     }
     
     func GetRandomSecretWord() -> String {
-        let randomIndex = Int.random(in: 0..<SecretWords.count)
-        return SecretWords[randomIndex].uppercased()
+        let secretWordList = EnglishSecretWords
+        let randomIndex = Int.random(in: 0..<secretWordList.count)
+        return secretWordList[randomIndex].uppercased()
     }
     
     func AllCorrect(_ rowState: LetterRowState) -> Bool {
