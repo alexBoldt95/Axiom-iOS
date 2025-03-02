@@ -7,19 +7,34 @@
 
 import Foundation
 
+struct GuessResult {
+    var letterStates: LetterRowState
+    var missingChars: Set<Character>
+    
+    init() {
+        self.letterStates = LetterRowState()
+        self.missingChars = Set<Character>()
+    }
+    
+    init(letterStates: LetterRowState, missingChars: Set<Character>) {
+        self.letterStates = letterStates
+        self.missingChars = missingChars
+    }
+}
+
 class Guesser {
     private var SecretWordSet: Set<String> = []
     init() {
         self.SecretWordSet = Set(EnglishSecretWords)
     }
     
-    func GetLetterStates(_ rawTarget: String, _ rawGuess: String) throws -> LetterRowState {
-        
+    func GetLetterStates(_ rawTarget: String, _ rawGuess: String) throws -> GuessResult {
         let target = trimAndNormalize(rawTarget)
         let guess = trimAndNormalize(rawGuess)
+        var missingCharSet: Set<Character> = []
         
         if guess.count == 0 {
-            return LetterRowState()
+            return GuessResult()
         }
         
         if target.count != guess.count {
@@ -38,6 +53,7 @@ class Guesser {
         // else -> .Incorrect
         
         var targetCounts = getLetterCounts(target)
+        let rawTargetCounts = getLetterCounts(target)
         var targetArray = getCharArray(target)
         var guessArray = getCharArray(guess)
         var seenDict: [Character: Int] = [:]
@@ -69,11 +85,16 @@ class Guesser {
                 ret[i] = LetterBoxState.Position
             } else {
                 ret[i] = LetterBoxState.Incorrect
+                // a character can be incorrect due to counts but can still exist in the target word
+                // only characters that do not exist at all in the target should be adding to the missing char set
+                if rawTargetCounts[guessChar, default: 0] == 0 {
+                    missingCharSet.insert(guessChar)
+                }
             }
             seenDict[guessChar, default: 0] += 1
         }
         
-        return LetterRowState(ret)
+        return GuessResult(letterStates: LetterRowState(ret), missingChars: missingCharSet)
     }
     
     func GetRandomSecretWord() -> String {
@@ -107,9 +128,14 @@ class Guesser {
         return Array(input)
     }
     
-    func ValidateGuess(_ rawTarget: String, _ rawGuess: String) throws {
+    func ValidateGuess(_ rawTarget: String, _ rawGuess: String, _ guessList: [String], _ invalidCharSet: Set<Character>) throws {
         let target = trimAndNormalize(rawTarget)
         let guess = trimAndNormalize(rawGuess)
+        
+        let guessSet = Set(guessList)
+        if guessSet.contains(guess) {
+            throw GuesserError.GuessAlreadyExists
+        }
         
         if target.count != guess.count {
             throw GuesserError.GuessLengthNotMatchExpected(targetLength: target.count, guessLength: guess.count)
@@ -118,6 +144,15 @@ class Guesser {
         // set is in lowercase
         if !self.SecretWordSet.contains(guess.lowercased()) {
             throw GuesserError.GuessNotInWordList(guess: guess)
+        }
+        
+        let invalidCharsInGuess: Set<Character> = invalidCharSet.intersection(Set(guess))
+        if !invalidCharsInGuess.isEmpty {
+            let invalidArray = Array(invalidCharsInGuess)
+            let sortedInvalidChars = invalidArray.sorted()
+            let sortedInvalidStrings = sortedInvalidChars.map(String.init)
+            let joinedString = sortedInvalidStrings.joined(separator: ", ")
+            throw GuesserError.GuessHasInvalidChars(guess: guess, invalidCharString: joinedString)
         }
     }
     

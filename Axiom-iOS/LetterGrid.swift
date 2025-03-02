@@ -31,7 +31,7 @@ struct LetterGrid: View {
         for i in 0..<numRows {
             do {
                 let result = try guesser.GetLetterStates(secretWordList[i], myGuessList[i])
-                myRowStates.append(result)
+                myRowStates.append(result.letterStates)
             } catch {
                 myRowStates.append(LetterRowState.allError(myGuessList[i].count))
             }

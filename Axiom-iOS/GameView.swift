@@ -10,13 +10,14 @@ import SwiftUI
 struct GameView: View {
     @State var secretWordList: [String]
     @State private var currentGuess = ""
-    @State private var guesses: [String] = []
+    @State private var guessList: [String] = []
     @State var gameFinished: Bool = false
     @State var message: String = "debug message"
     @State var turn: Int = 1
     @State var showMessage: Bool = false
     @State var showGrid: Bool
     @State var newGameButtonText: String = "New Game"
+    @State var missingCharSet: Set<Character> = []
     @FocusState var guessFieldIsFocused: Bool
     
     var GuesserLogic: Guesser = Guesser()
@@ -32,7 +33,7 @@ struct GameView: View {
         VStack {
             if showGrid {
                 VStack {
-                    LetterGrid(secretWordList: secretWordList, guessList: guesses)
+                    LetterGrid(secretWordList: secretWordList, guessList: guessList)
                     HStack{
                         TextField("GUESS", text: $currentGuess, prompt: Text("GUESS"))
                             .focused($guessFieldIsFocused) // Bind focus state
@@ -55,6 +56,7 @@ struct GameView: View {
                     Text("\(message)")
                         .opacity(showMessage ? 1 : 0)
                         .font(.largeTitle)
+                        .padding()
                 }
             }
             if !showGrid || gameFinished {
@@ -71,7 +73,7 @@ struct GameView: View {
     func newGame() {
         self.showGrid = true
         self.gameFinished = false
-        self.guesses.removeAll()
+        self.guessList.removeAll()
         self.turn = 1
         clearMessage()
         
@@ -82,23 +84,33 @@ struct GameView: View {
     func handleTurn(_ guessWord: String, _ turnIndex: Int) {
         clearMessage()
         do {
-            try GuesserLogic.ValidateGuess(secretWordList[turnIndex], guessWord)
+            try GuesserLogic.ValidateGuess(secretWordList[turnIndex], guessWord, self.guessList, self.missingCharSet)
         } catch GuesserError.GuessLengthNotMatchExpected(let expectedLength, let guessLength) {
-            setAndShowMessage("Your guess (\(guessLength)) must be \(expectedLength) characters long.")
+            setAndShowMessage("Your guess length (\(guessLength)) must be \(expectedLength) characters long.")
             return
         } catch GuesserError.GuessNotInWordList(_) {
             setAndShowMessage("Not in word list")
+            return
+        } catch GuesserError.GuessHasInvalidChars(guess: _, let invalidString) {
+            // not a feature in the inspired game
+            //                    setAndShowMessage("Cannot use characters that are missing: \"\(invalidString)\"")
+            //                    return
+        }
+        catch GuesserError.GuessAlreadyExists {
+            setAndShowMessage("Already guessed")
             return
         } catch {
             setAndShowMessage(String(describing: error))
             return
         }
         
-        guesses.append(guessWord)
-        let rowStateForCurrentGuess = getRowState(secretWord: secretWordList[turnIndex], guessWord: guessWord)
+        guessList.append(guessWord)
+        let rowResultForCurrentGuess = getRowResult(secretWord: secretWordList[turnIndex], guessWord: guessWord)
+        
+        self.missingCharSet = self.missingCharSet.union(rowResultForCurrentGuess.missingChars)
         
         // win
-        let win = GuesserLogic.AllCorrect(rowStateForCurrentGuess)
+        let win = GuesserLogic.AllCorrect(rowResultForCurrentGuess.letterStates)
         if win {
             gameFinished = true
             setAndShowMessage("🔥🔥🔥")
@@ -127,9 +139,9 @@ struct GameView: View {
     }
     
     
-    func getRowState(secretWord: String, guessWord: String) -> LetterRowState {
+    func getRowResult(secretWord: String, guessWord: String) -> GuessResult {
         let guesser = Guesser()
-        var result = LetterRowState()
+        var result = GuessResult()
         do {
             result = try guesser.GetLetterStates(secretWord, guessWord)
         } catch {

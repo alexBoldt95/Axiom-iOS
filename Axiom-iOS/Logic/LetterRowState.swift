@@ -5,6 +5,14 @@
 //  Created by Alexander Boldt on 2/22/25.
 //
 
+enum LetterBoxState: Equatable {
+    case Empty
+    case Incorrect
+    case Position
+    case Correct
+    case Error
+}
+
 
 struct LetterRowState: Equatable {
     let states : [LetterBoxState]
@@ -34,6 +42,10 @@ struct LetterRowState: Equatable {
     
     static func allError(_ desiredLength : Int) -> LetterRowState {
         return LetterRowState(Array(repeating: LetterBoxState.Error, count: desiredLength))
+    }
+    
+    func States() -> [LetterBoxState] {
+        return self.states
     }
 }
 
