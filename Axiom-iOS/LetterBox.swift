@@ -33,11 +33,12 @@ struct LetterBox: View {
                 .aspectRatio(1, contentMode: .fit)
                 .background(backgroundState, in: RoundedRectangle(cornerRadius: 10))
             
+            // TODO dynamically size font to container
             Text(theLetter.uppercased())
                 .font(.system(size: 60))
                 .fontDesign(.rounded)
         }
-        .frame(maxWidth: 150, maxHeight: 85)
+        .frame(height: 68)
     }
 }
 

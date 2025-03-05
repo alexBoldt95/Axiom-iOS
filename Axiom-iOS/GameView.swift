@@ -223,19 +223,37 @@ struct GameView: View {
     }
 }
 
-struct GameView_Preview: View {
+struct PhraseMode_Preiew: View {
     var body: some View {
-//        let GuesserLogic: Guesser = Guesser()
-        //        let secretWord = GuesserLogic.GetRandomSecretWord()
-        //        let secretWordList = Array(repeating: secretWord, count: 6)
-        let secretPhrase = ["wheel", "of", "fortune"]
+        let secretPhrase = ["four", "two", "three", "one"]
         let gameParams = GameParams(Mode: .Phrase, Started: true, SecretWordList: secretPhrase)
         GameView(gameParams: gameParams)
     }
 }
 
+struct WordMode_Preview: View {
+    var body: some View {
+        let GuesserLogic: Guesser = Guesser()
+                let secretWord = GuesserLogic.GetRandomSecretWord()
+                let secretWordList = Array(repeating: secretWord, count: 6)
+        let gameParams = GameParams(Mode: .Word, Started: true, SecretWordList: secretWordList)
+        GameView(gameParams: gameParams)
+    }
+}
+
+struct Debug_Preview: View {
+    var body: some View {
+                let secretWord = "AXIOM"
+                let secretWordList = Array(repeating: secretWord, count: 6)
+        let gameParams = GameParams(Mode: .Word, Started: true, SecretWordList: secretWordList)
+        GameView(gameParams: gameParams)
+    }
+}
+
 #Preview {
-    GameView_Preview()
+//    Debug_Preview()
+//    WordMode_Preview()
+    PhraseMode_Preiew()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.appBackground)
         .tint(.white)

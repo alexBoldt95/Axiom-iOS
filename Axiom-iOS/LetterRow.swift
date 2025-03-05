@@ -19,21 +19,26 @@ struct LetterRow: View {
     }
     var body: some View {
         HStack {
+            Spacer()
+//                .border(.orange)
             ForEach(0..<theWord.count, id: \.description) { index in
                 let letterIndex = theWord.index(theWord.startIndex, offsetBy: index)
                 let thisLetter = String(theWord[letterIndex])
                 LetterBox(theLetter: thisLetter, theState: letterStates.stateAtIndex(index))
             }
+//            .border(.orange)
             // TODO fill empties from the word directly...
             ForEach(theWord.count..<length, id: \.description) { _ in
                 LetterBox(theLetter: "", theState: LetterBoxState.Empty)
             }
+            Spacer()
+//                .border(.orange)
         }
         .padding(.horizontal)
     }
 }
 
 #Preview {
-    let guessWord = "AXIO"
-    LetterRow(theWord: guessWord, length: 5, letterStates: LetterRowState([.Correct, .Incorrect, .Position, .Incorrect]))
+    let guessWord = "AX"
+    LetterRow(theWord: guessWord, length: 2, letterStates: LetterRowState([.Correct, .Incorrect]))
 }
