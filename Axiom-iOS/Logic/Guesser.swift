@@ -22,6 +22,14 @@ struct GuessResult {
     }
 }
 
+struct ValidateGuessParams {
+    var mode: GameMode
+    var rawTarget: String
+    var rawGuess: String
+    var guessList: [String]
+    var invalidCharSet: Set<Character>
+}
+
 class Guesser {
     private var SecretWordSet: Set<String> = []
     init() {
@@ -77,10 +85,10 @@ class Guesser {
             // if this letter has more instances in the guess than in the target, AND its guess position is greater than its target count
             let seenCount = seenDict[guessChar] ?? 0
             let overLimitForPosition = seenCount >= guessHits
-                        
+            
             // exact matches already covered above
             if guessChar == targetArray[i] {
-               continue
+                continue
             } else if guessHits > 0 && !overLimitForPosition {
                 ret[i] = LetterBoxState.Position
             } else {
@@ -111,11 +119,11 @@ class Guesser {
         }
         return true
     }
-
+    
     func trimAndNormalize(_ input: String) -> String {
         return input.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
+    
     func getLetterCounts(_ input: String) -> [Character: Int] {
         var counts: [Character: Int] = [:]
         for char in input {
@@ -123,36 +131,38 @@ class Guesser {
         }
         return counts
     }
-
+    
     func getCharArray(_ input: String) -> [Character] {
         return Array(input)
     }
     
-    func ValidateGuess(_ rawTarget: String, _ rawGuess: String, _ guessList: [String], _ invalidCharSet: Set<Character>) throws {
-        let target = trimAndNormalize(rawTarget)
-        let guess = trimAndNormalize(rawGuess)
-        
-        let guessSet = Set(guessList)
-        if guessSet.contains(guess) {
-            throw GuesserError.GuessAlreadyExists
-        }
+    func ValidateGuess(_ validateParams: ValidateGuessParams) throws {
+        let target = trimAndNormalize(validateParams.rawTarget)
+        let guess = trimAndNormalize(validateParams.rawGuess)
         
         if target.count != guess.count {
             throw GuesserError.GuessLengthNotMatchExpected(targetLength: target.count, guessLength: guess.count)
         }
         
-        // set is in lowercase
-        if !self.SecretWordSet.contains(guess.lowercased()) {
-            throw GuesserError.GuessNotInWordList(guess: guess)
+        if validateParams.mode == .Word {
+            let invalidCharsInGuess: Set<Character> = validateParams.invalidCharSet.intersection(Set(guess))
+            if !invalidCharsInGuess.isEmpty {
+                let invalidArray = Array(invalidCharsInGuess)
+                let sortedInvalidChars = invalidArray.sorted()
+                let sortedInvalidStrings = sortedInvalidChars.map(String.init)
+                let joinedString = sortedInvalidStrings.joined(separator: ", ")
+                throw GuesserError.GuessHasInvalidChars(guess: guess, invalidCharString: joinedString)
+            }
+            
+            // set is in lowercase
+            if !self.SecretWordSet.contains(guess.lowercased()) {
+                throw GuesserError.GuessNotInWordList(guess: guess)
+            }
         }
         
-        let invalidCharsInGuess: Set<Character> = invalidCharSet.intersection(Set(guess))
-        if !invalidCharsInGuess.isEmpty {
-            let invalidArray = Array(invalidCharsInGuess)
-            let sortedInvalidChars = invalidArray.sorted()
-            let sortedInvalidStrings = sortedInvalidChars.map(String.init)
-            let joinedString = sortedInvalidStrings.joined(separator: ", ")
-            throw GuesserError.GuessHasInvalidChars(guess: guess, invalidCharString: joinedString)
+        let guessSet = Set(validateParams.guessList)
+        if guessSet.contains(guess) {
+            throw GuesserError.GuessAlreadyExists
         }
     }
     
