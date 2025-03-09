@@ -11,6 +11,7 @@ struct GameParams {
     var Mode: GameMode
     var Started : Bool
     var SecretWordList: [String]
+    var SpecialDesign: Bool?
 }
 
 struct GameView: View {
@@ -25,23 +26,32 @@ struct GameView: View {
     @State var newGameButtonText: String = "New Game"
     @State var missingCharSet: Set<Character> = []
     @State var Mode: GameMode
+    @State var SpecialDesign: Bool
+    @State var fontDesign: Font.Design
+    @State var backgroundColor: Color
     @FocusState var guessFieldIsFocused: Bool
-    
     var GuesserLogic: Guesser = Guesser()
-    var turnLimit: Int
+    @State var turnLimit: Int
+    @State var winMessage = "🔥🔥🔥"
+    @State var loseMessage = "🤣 the word was"
     
     init(gameParams: GameParams) {
         self.secretWordList = gameParams.SecretWordList
         self.turnLimit = gameParams.SecretWordList.count
         self.showGrid = gameParams.Started
         self.Mode = gameParams.Mode
+        let inSpecialDesign = gameParams.SpecialDesign ?? false
+        self.SpecialDesign = inSpecialDesign
+        let gameDesign = GameView.getDesign(inSpecialDesign)
+        self.fontDesign = gameDesign.fontDesign
+        self.backgroundColor = gameDesign.backgroundColor
     }
     
     var body: some View {
         VStack {
             if showGrid {
                 VStack {
-                    LetterGrid(secretWordList: secretWordList, guessList: guessList)
+                    LetterGrid(secretWordList: self.secretWordList, guessList: self.guessList, fontDesign: self.fontDesign)
                     HStack{
                         TextField("GUESS", text: $currentGuess, prompt: Text("GUESS"))
                             .focused($guessFieldIsFocused) // Bind focus state
@@ -54,8 +64,7 @@ struct GameView: View {
                             .disableAutocorrection(true)
                             .autocapitalization(.allCharacters)
                             .foregroundColor(.white)
-                            .fontDesign(.monospaced)
-                            .fontDesign(.rounded)
+                            .fontDesign(self.fontDesign)
                             .font(.largeTitle)
                             .multilineTextAlignment(.center)
                             .padding()
@@ -76,7 +85,11 @@ struct GameView: View {
                 .padding(.top)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(self.backgroundColor)
+        .tint(.white)
     }
+        
     
     func newGame() {
         if self.Mode == .Phrase {
@@ -87,6 +100,8 @@ struct GameView: View {
     }
     
     func newWordGame() {
+        self.setDesign(false)
+        self.Mode = .Word
         self.showGrid = true
         self.gameFinished = false
         self.guessList.removeAll()
@@ -98,36 +113,61 @@ struct GameView: View {
     }
     
     func newPhraseGame() {
+        self.setDesign(false)
+        self.Mode = .Phrase
         self.showGrid = true
         self.gameFinished = false
         self.guessList.removeAll()
         self.turn = 1
+        self.turnLimit = secretWordList.count
         clearMessage()
         
         // do not create new phrases for now...
     }
     
+    func newSpecialGame() {
+        newPhraseGame()
+        self.setDesign(true)
+        self.SpecialDesign = true
+        self.secretWordList = ["will", "you", "marry", "me?"]
+        self.turnLimit = secretWordList.count
+        self.winMessage = "❤️❤️❤️"
+    }
+    
+    private static func getDesign(_ isSpecialDesign: Bool) -> (fontDesign: Font.Design, backgroundColor: Color) {
+        if isSpecialDesign {
+            return (.serif, .specialBackground)
+        }
+        return (.rounded, .appBackground)
+    }
+    
+    func setDesign(_ isSpecialDesign: Bool) {
+        let design = GameView.getDesign(isSpecialDesign)
+        self.fontDesign = design.fontDesign
+        self.backgroundColor = design.backgroundColor
+    }
+    
     func handleTurn(_ guessWord: String, _ turnIndex: Int) {
         clearMessage()
+        if GuesserLogic.IsSpecialPassword(guessWord) {
+            newSpecialGame()
+            return
+        }
+        var cleanGuessWord: String = ""
         do {
             let validateGuessParams = ValidateGuessParams(mode: self.Mode,
                                                           rawTarget: secretWordList[turnIndex],
                                                           rawGuess: guessWord,
                                                           guessList: self.guessList,
                                                           invalidCharSet: self.missingCharSet)
-            try GuesserLogic.ValidateGuess(validateGuessParams)
+            cleanGuessWord =  try GuesserLogic.ValidateGuess(validateGuessParams)
         } catch GuesserError.GuessLengthNotMatchExpected(let expectedLength, let guessLength) {
             setAndShowMessage("Your guess length (\(guessLength)) must be \(expectedLength) characters long.")
             return
         } catch GuesserError.GuessNotInWordList(_) {
             setAndShowMessage("Not in word list")
             return
-        } catch GuesserError.GuessHasInvalidChars(guess: _, invalidCharString: _) {
-            // not a feature in the inspired game
-            //                    setAndShowMessage("Cannot use characters that are missing: \"\(invalidString)\"")
-            //                    return
-        }
-        catch GuesserError.GuessAlreadyExists {
+        } catch GuesserError.GuessAlreadyExists {
             setAndShowMessage("Already guessed")
             return
         } catch {
@@ -138,9 +178,9 @@ struct GameView: View {
         // in Phrase Mode, each line is an individual word
         // and must be correct before advancing
         if self.Mode == .Phrase {
-            phraseModeTurn(guessWord, turnIndex)
+            phraseModeTurn(cleanGuessWord, turnIndex)
         } else {
-            wordModeTurn(guessWord, turnIndex)
+            wordModeTurn(cleanGuessWord, turnIndex)
         }
     }
     
@@ -154,7 +194,7 @@ struct GameView: View {
         let win = GuesserLogic.AllCorrect(rowResultForCurrentGuess.letterStates)
         if win {
             gameFinished = true
-            setAndShowMessage("🔥🔥🔥")
+            setAndShowMessage(self.winMessage)
             newGameButtonText = "Play Again?"
             return
         }
@@ -163,7 +203,7 @@ struct GameView: View {
         // loss
         if turn > turnLimit {
             gameFinished = true
-            setAndShowMessage("🤣 the word was '\(secretWordList[0])'")
+            setAndShowMessage(loseMessage + " '\(secretWordList[0])'")
             newGameButtonText = "Try Again?"
             return
         }
@@ -187,7 +227,7 @@ struct GameView: View {
             let win = turn >= turnLimit
             if win {
                 gameFinished = true
-                setAndShowMessage("🔥🔥🔥")
+                setAndShowMessage(self.winMessage)
                 newGameButtonText = "Play Again?"
                 return
             }
@@ -234,8 +274,8 @@ struct PhraseMode_Preiew: View {
 struct WordMode_Preview: View {
     var body: some View {
         let GuesserLogic: Guesser = Guesser()
-                let secretWord = GuesserLogic.GetRandomSecretWord()
-                let secretWordList = Array(repeating: secretWord, count: 6)
+        let secretWord = GuesserLogic.GetRandomSecretWord()
+        let secretWordList = Array(repeating: secretWord, count: 6)
         let gameParams = GameParams(Mode: .Word, Started: true, SecretWordList: secretWordList)
         GameView(gameParams: gameParams)
     }
@@ -243,18 +283,27 @@ struct WordMode_Preview: View {
 
 struct Debug_Preview: View {
     var body: some View {
-                let secretWord = "AXIOM"
-                let secretWordList = Array(repeating: secretWord, count: 6)
+        let secretWord = "AXIOM"
+        let secretWordList = Array(repeating: secretWord, count: 6)
         let gameParams = GameParams(Mode: .Word, Started: true, SecretWordList: secretWordList)
         GameView(gameParams: gameParams)
     }
 }
 
+struct SpecialMode_Preview: View {
+    var body: some View {
+        let secretPhrase = ["will", "you", "marry", "me?"]
+        let gameParams = GameParams(Mode: .Phrase, Started: true, SecretWordList: secretPhrase, SpecialDesign: true)
+        GameView(gameParams: gameParams)
+    }
+}
+
 #Preview {
-//    Debug_Preview()
-//    WordMode_Preview()
-    PhraseMode_Preiew()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.appBackground)
-        .tint(.white)
+    //    Debug_Preview()
+        WordMode_Preview()
+    //    PhraseMode_Preiew()
+//    SpecialMode_Preview()
+//        .frame(maxWidth: .infinity, maxHeight: .infinity)
+//        .background(.app)
+//        .tint(.white)
 }

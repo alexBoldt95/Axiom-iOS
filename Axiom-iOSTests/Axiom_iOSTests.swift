@@ -120,7 +120,7 @@ struct Axiom_iOSTests {
             let guesser = Guesser()
             var result = try guesser.GetLetterStates("AXIOM", "FAIRY")
             var states = result.letterStates.States()
-
+            
             var expected: [LetterBoxState] = [.Incorrect, .Position, .Correct, .Incorrect, .Incorrect]
             for (i, res) in states.enumerated() {
                 #expect(res == expected[i])
@@ -142,6 +142,14 @@ struct Axiom_iOSTests {
                 #expect(res == expected[i])
             }
             assertLengthAndCharsOfSet(result.missingChars, 0, [])
+        }
+        
+        @Test("Special Password") func IsSpecialPassword() async throws {
+            let guesser = Guesser()
+            let falseResult = guesser.IsSpecialPassword("abcde")
+            #expect(!falseResult)
+            let trueResult = guesser.IsSpecialPassword("kuzYA")
+            #expect(trueResult)
         }
     }
 }

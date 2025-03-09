@@ -10,6 +10,7 @@ import SwiftUI
 struct LetterBox: View {
     var theLetter: String
     var theState: LetterBoxState
+    var fontDesign: Font.Design = .rounded
     
     var backgroundState: Color {
         switch theState {
@@ -35,13 +36,12 @@ struct LetterBox: View {
             
             // TODO dynamically size font to container
             Text(theLetter.uppercased())
-                .font(.system(size: 60))
-                .fontDesign(.rounded)
+                .font(.system(size: 60, design: self.fontDesign))
         }
         .frame(height: 68)
     }
 }
 
 #Preview {
-    LetterBox(theLetter: "B", theState: LetterBoxState.Empty)
+    LetterBox(theLetter: "A", theState: LetterBoxState.Empty, fontDesign: .serif)
 }

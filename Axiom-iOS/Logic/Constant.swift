@@ -6,8 +6,3 @@
 //
 
 import Foundation
-
-enum GameMode: Equatable {
-    case Word
-    case Phrase
-}

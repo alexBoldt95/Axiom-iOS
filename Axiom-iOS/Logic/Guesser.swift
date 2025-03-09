@@ -7,6 +7,13 @@
 
 import Foundation
 
+let specialPassWord = "KUZYA"
+
+public enum GameMode: Equatable {
+    case Word
+    case Phrase
+}
+
 struct GuessResult {
     var letterStates: LetterRowState
     var missingChars: Set<Character>
@@ -136,7 +143,7 @@ class Guesser {
         return Array(input)
     }
     
-    func ValidateGuess(_ validateParams: ValidateGuessParams) throws {
+    func ValidateGuess(_ validateParams: ValidateGuessParams) throws -> String {
         let target = trimAndNormalize(validateParams.rawTarget)
         let guess = trimAndNormalize(validateParams.rawGuess)
         
@@ -145,14 +152,17 @@ class Guesser {
         }
         
         if validateParams.mode == .Word {
-            let invalidCharsInGuess: Set<Character> = validateParams.invalidCharSet.intersection(Set(guess))
-            if !invalidCharsInGuess.isEmpty {
-                let invalidArray = Array(invalidCharsInGuess)
-                let sortedInvalidChars = invalidArray.sorted()
-                let sortedInvalidStrings = sortedInvalidChars.map(String.init)
-                let joinedString = sortedInvalidStrings.joined(separator: ", ")
-                throw GuesserError.GuessHasInvalidChars(guess: guess, invalidCharString: joinedString)
-            }
+            // not a feature in the inspired game
+            //                    setAndShowMessage("Cannot use characters that are missing: \"\(invalidString)\"")
+            //                    return
+//            let invalidCharsInGuess: Set<Character> = validateParams.invalidCharSet.intersection(Set(guess))
+//            if !invalidCharsInGuess.isEmpty {
+//                let invalidArray = Array(invalidCharsInGuess)
+//                let sortedInvalidChars = invalidArray.sorted()
+//                let sortedInvalidStrings = sortedInvalidChars.map(String.init)
+//                let joinedString = sortedInvalidStrings.joined(separator: ", ")
+//                throw GuesserError.GuessHasInvalidChars(guess: guess, invalidCharString: joinedString)
+//            }
             
             // set is in lowercase
             if !self.SecretWordSet.contains(guess.lowercased()) {
@@ -164,7 +174,12 @@ class Guesser {
         if guessSet.contains(guess) {
             throw GuesserError.GuessAlreadyExists
         }
+        
+        return guess
     }
     
+    func IsSpecialPassword(_ arg: String) -> Bool {
+        return trimAndNormalize(arg) == specialPassWord
+    }
 }
 

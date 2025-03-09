@@ -12,10 +12,15 @@ struct LetterGrid: View {
     let secretWordList: [String]
     var guessList: [String]
     private var guessStates: [LetterRowState]
+    var fontDesign: Font.Design = .rounded
     
-    init(secretWordList: [String], guessList: [String]) {
+    init(secretWordList: [String], guessList: [String], fontDesign: Font.Design = .rounded) {
         self.secretWordList = secretWordList
         self.numRows = secretWordList.count
+        self.fontDesign = fontDesign
+        
+        print("letter grid font degign: \(fontDesign)")
+
         
         var myGuessList = guessList
         // fill out rest with empties
@@ -43,12 +48,12 @@ struct LetterGrid: View {
     var body: some View {
         VStack {
             ForEach(0..<numRows, id: \.description) { guessIndex in
-                LetterRow(theWord: guessList[guessIndex], length: secretWordList[guessIndex].count, letterStates: guessStates[guessIndex])
+                LetterRow(theWord: guessList[guessIndex], length: secretWordList[guessIndex].count, letterStates: guessStates[guessIndex], fontDesign: self.fontDesign)
             }
         }
     }
 }
 
 #Preview {
-    LetterGrid(secretWordList:["testa", "testb", "testc", "abcde"], guessList: ["testa", "testa", "btest"])
+    LetterGrid(secretWordList:["testa", "testb", "testc", "abcde"], guessList: ["testa", "testa", "btest"], fontDesign: Font.Design.serif)
 }
